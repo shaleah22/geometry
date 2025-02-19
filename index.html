@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>class review</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #level { position: absolute; top: 10px; right: 10px; font-size: 30px; font-weight: bold; }
+        #question { margin-top: 40px; margin-bottom: 50px; font-size: 30px; }
+        #questionContainer { margin-top: 90px; }
+        #questionImage { max-width: 400px; max-height: 300px; width: auto; height: auto; display: block; margin: 0 auto; }
+        .choice { margin: 10px 0; padding: 10px; font-size: 34px; border: 3px solid #ccc; cursor: pointer; }
+        .choice:hover { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="quiz">
+            <img id="questionImage" src="" alt="Question image" style="max-width: 50%; height: auto; margin-bottom: 15px; display: none;"/>
+            <div id="level">Question: 1</div>
+            <div id="question">Question goes here</div>
+            <div id="choices"></div>
+            <input id="inputBox" placeholder="Type your answer here" style="display: none;" type="text">
+            <div id="feedback"></div>
+        </div>
+    </div>
+    <script>
+
+
+
+        //no right click code
+         window.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+        }, false);
+
+
+
+
+
+
+
+        let currentLevel = 1;
+        let currentQuestionIndex = 0;
+        let answerTimeout;
+        
+        function loadQuestion() {
+            clearTimeout(answerTimeout);
+            const question = questions[currentQuestionIndex];
+            document.getElementById('question').innerHTML = question.question;
+
+            if (question.imageUrl) {
+                document.getElementById('questionImage').src = question.imageUrl;
+                document.getElementById('questionImage').style.display = "block";
+            } else {
+                document.getElementById('questionImage').style.display = "none";
+            }
+
+            if (question.options) {
+                loadChoiceQuestion(question);
+            } else {
+                loadInputQuestion(question);
+            }
+
+            answerTimeout = setTimeout(() => {
+                alert(`The correct answer was: ${question.answer}`);
+                document.getElementById('feedback').textContent = "Please enter or select the correct answer to proceed.";
+            }, 400000);
+        }
+
+        function loadChoiceQuestion(question) {
+            document.getElementById('inputBox').style.display = "none";
+            const choicesContainer = document.getElementById('choices');
+            choicesContainer.innerHTML = "";
+
+            question.options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.className = 'choice';
+                button.onclick = () => checkAnswer(option);
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        function loadInputQuestion(question) {
+            document.getElementById('choices').innerHTML = "";
+            document.getElementById('inputBox').style.display = "block";
+            document.getElementById('inputBox').value = "";
+            document.getElementById('inputBox').oninput = () => checkAnswer(document.getElementById('inputBox').value);
+            document.getElementById('inputBox').focus();
+        }
+
+        function checkAnswer(userAnswer) {
+            clearTimeout(answerTimeout);
+            const correctAnswer = questions[currentQuestionIndex].answer;
+            if (userAnswer.trim().toLowerCase() === correctAnswer.toLowerCase()) {
+                document.getElementById('feedback').textContent = "Correct!";
+                currentLevel++;
+                document.getElementById("level").textContent = `Level: ${currentLevel}`;
+                currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+                loadQuestion();
+            } else {
+                document.getElementById('feedback').textContent = "Incorrect. Please try again!";
+            }
+        }
+
+        const questions = [
+
+{"question":"Which formula is used to find the surface area of a rectangular prism?","answer":"SA = 2(lh + lw + hw)","imageUrl":"","options":["SA = 4πr²","SA = ½(b₁ + b₂)h","SA = 2(lh + lw + hw)","SA = lwh"]},
+{"question":"Which formula is used to find the surface area of a square pyramid?","answer":"SA = 2bs + b²","imageUrl":"","options":["SA = 2bs + b²","SA = 2πr² + 2πrh","SA = bh","SA = ½bhℓ"]},
+{"question":"Which formula is used to find the circumference of a circle when given the diameter?","answer":"C = πd","imageUrl":"","options":["C = πd","C = 2πr","A = πr²","A = ½bh"]},
+{"question":"Which formula is used to find the circumference of a circle when given the radius?","answer":"C = 2πr","imageUrl":"","options":["A = πr²","C = πd","C = 2πr","A = ½(b₁ + b₂)h"]},
+{"question":"Which formula is used to find the area of a circle?","answer":"A = πr²","imageUrl":"","options":["A = πr²","C = πd","C = 2πr","A = bh"]},
+
+{"question":"Which formula is used to find the volume of a rectangular prism?","answer":"V = lwh","imageUrl":"","options":["V = πr²h","V = lwh","V = ½bhℓ","V = 2πr² + 2πrh"]},
+{"question":"Which formula is used to find the area of a triangle?","answer":"A = ½bh","imageUrl":"","options":["A = ½(b₁ + b₂)h","A = bh","A = ½bh","A = πr²"]},
+{"question":"Which formula is used to find the volume of a cylinder?","answer":"V = πr²h","imageUrl":"","options":["V = πr²h","V = lwh","V = ½bhℓ","V = 2πr² + 2πrh"]},
+{"question":"Which formula is used to find the area of a trapezoid?","answer":"A = ½(b₁ + b₂)h","imageUrl":"","options":["A = ½bh","A = ½(b₁ + b₂)h","A = πr²","A = bh"]},
+{"question":"Which formula is used to find the surface area of a cylinder?","answer":"SA = 2πr² + 2πrh","imageUrl":"","options":["SA = 4πr²","SA = ½bh","SA = πr²h","SA = 2πr² + 2πrh"]},
+{"question":"Which formula is used to find the area of a parallelogram?","answer":"A = bh","imageUrl":"","options":["A = πr²","A = ½bh","A = ½(b₁ + b₂)h","A = bh"]},
+{"question":"Which formula is used to find the area of a trapezoid?","answer":"A = ½h(b₁ + b₂)","imageUrl":"","options":["A = ½h(b₁ + b₂)","A = bh","A = ½bh","A = πr²"]},
+{"question":"Which formula is used to find the volume of a rectangular prism?","answer":"V = lwh","imageUrl":"","options":["V = lwh","V = ½bhℓ","V = πr²h","V = 2πr² + 2πrh"]},
+{"question":"Which formula is used to find the area of a triangle?","answer":"A = ½bh","imageUrl":"","options":["A = bh","A = πr²","A = ½bh","A = ½(b₁ + b₂)h"]},
+
+
+
+
+        ];
+
+        loadQuestion();
+    </script>
+</body>
+</html>
