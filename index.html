@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,6 +12,8 @@
         #questionImage { max-width: 400px; max-height: 300px; width: auto; height: auto; display: block; margin: 0 auto; }
         .choice { margin: 10px 0; padding: 10px; font-size: 34px; border: 3px solid #ccc; cursor: pointer; }
         .choice:hover { background-color: #f0f0f0; }
+        #showAnswer, #restartDrill { margin-top: 20px; font-size: 20px; padding: 10px; cursor: pointer; }
+        #answerDisplay { margin-top: 10px; font-size: 24px; font-weight: bold; display: none; }
     </style>
 </head>
 <body>
@@ -24,56 +25,51 @@
             <div id="choices"></div>
             <input id="inputBox" placeholder="Type your answer here" style="display: none;" type="text">
             <div id="feedback"></div>
+            <button id="showAnswer">Show Answer</button>
+            <button id="restartDrill">Restart Drill</button>
+            <div id="answerDisplay"></div>
         </div>
     </div>
     <script>
-
-
-
-        //no right click code
-         window.addEventListener('contextmenu', function (e) {
-            e.preventDefault();
-        }, false);
-
-
-
-
-
-
-
-        let currentLevel = 1;
-        let currentQuestionIndex = 0;
+        let currentLevel = localStorage.getItem("savedLevel") ? parseInt(localStorage.getItem("savedLevel")) : 1;
+        let currentQuestionIndex = localStorage.getItem("savedQuestionIndex") ? parseInt(localStorage.getItem("savedQuestionIndex")) : 0;
         let answerTimeout;
+        
+        function saveProgress() {
+            localStorage.setItem("savedLevel", currentLevel);
+            localStorage.setItem("savedQuestionIndex", currentQuestionIndex);
+        }
         
         function loadQuestion() {
             clearTimeout(answerTimeout);
+            document.getElementById("answerDisplay").style.display = "none";
+            document.getElementById("level").textContent = `Level: ${currentLevel}`;
             const question = questions[currentQuestionIndex];
             document.getElementById('question').innerHTML = question.question;
-
+            
             if (question.imageUrl) {
                 document.getElementById('questionImage').src = question.imageUrl;
                 document.getElementById('questionImage').style.display = "block";
             } else {
                 document.getElementById('questionImage').style.display = "none";
             }
-
+            
             if (question.options) {
                 loadChoiceQuestion(question);
             } else {
                 loadInputQuestion(question);
             }
-
+            
             answerTimeout = setTimeout(() => {
-                alert(`The correct answer was: ${question.answer}`);
                 document.getElementById('feedback').textContent = "Please enter or select the correct answer to proceed.";
             }, 400000);
         }
-
+        
         function loadChoiceQuestion(question) {
             document.getElementById('inputBox').style.display = "none";
             const choicesContainer = document.getElementById('choices');
             choicesContainer.innerHTML = "";
-
+            
             question.options.forEach(option => {
                 const button = document.createElement('button');
                 button.innerText = option;
@@ -82,7 +78,7 @@
                 choicesContainer.appendChild(button);
             });
         }
-
+        
         function loadInputQuestion(question) {
             document.getElementById('choices').innerHTML = "";
             document.getElementById('inputBox').style.display = "block";
@@ -90,23 +86,42 @@
             document.getElementById('inputBox').oninput = () => checkAnswer(document.getElementById('inputBox').value);
             document.getElementById('inputBox').focus();
         }
-
+        
         function checkAnswer(userAnswer) {
             clearTimeout(answerTimeout);
             const correctAnswer = questions[currentQuestionIndex].answer;
             if (userAnswer.trim().toLowerCase() === correctAnswer.toLowerCase()) {
                 document.getElementById('feedback').textContent = "Correct!";
                 currentLevel++;
-                document.getElementById("level").textContent = `Level: ${currentLevel}`;
                 currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+                saveProgress();
                 loadQuestion();
             } else {
                 document.getElementById('feedback').textContent = "Incorrect. Please try again!";
             }
         }
-
+        
+        document.getElementById("showAnswer").addEventListener("click", function() {
+            const correctAnswer = questions[currentQuestionIndex].answer;
+            document.getElementById("answerDisplay").textContent = `Answer: ${correctAnswer}`;
+            document.getElementById("answerDisplay").style.display = "block";
+        });
+        
+        document.getElementById("restartDrill").addEventListener("click", function() {
+            currentLevel = 1;
+            currentQuestionIndex = 0;
+            localStorage.removeItem("savedLevel");
+            localStorage.removeItem("savedQuestionIndex");
+            loadQuestion();
+        });
+        
         const questions = [
+            {"question": "What is 5 + 3?", "answer": "8", "options": ["6", "7", "8", "9"], "imageUrl": ""},
+            {"question": "What is the capital of France?", "answer": "Paris", "options": ["London", "Berlin", "Paris", "Madrid"], "imageUrl": ""},
 
+
+
+    
 {"question":"Which formula is used to find the surface area of a rectangular prism?","answer":"SA = 2(lh + lw + hw)","imageUrl":"","options":["SA = 4πr²","SA = ½(b₁ + b₂)h","SA = 2(lh + lw + hw)","SA = lwh"]},
 {"question":"Which formula is used to find the surface area of a square pyramid?","answer":"SA = 2bs + b²","imageUrl":"","options":["SA = 2bs + b²","SA = 2πr² + 2πrh","SA = bh","SA = ½bhℓ"]},
 {"question":"Which formula is used to find the circumference of a circle when given the diameter?","answer":"C = πd","imageUrl":"","options":["C = πd","C = 2πr","A = πr²","A = ½bh"]},
@@ -126,8 +141,256 @@
 
 
 
-        ];
+//coordinate graphing decimal halves
+  {"question": "Point ____ is located at (-2, -1)", "answer": "c", "imageUrl": "https://i.postimg.cc/pdfss776/Screenshot-2025-02-10-at-4-59-00-PM.png"},
+  {"question": "Point ____ is located at (-3, 3)", "answer": "b", "imageUrl": "https://i.postimg.cc/pdfss776/Screenshot-2025-02-10-at-4-59-00-PM.png"},
+  {"question": "Point ____ is located at (-1.5, 2.5)", "answer": "a", "imageUrl": "https://i.postimg.cc/pdfss776/Screenshot-2025-02-10-at-4-59-00-PM.png"},
+  {"question": "Point ____ is located at (3, -2)", "answer": "e", "imageUrl": "https://i.postimg.cc/pdfss776/Screenshot-2025-02-10-at-4-59-00-PM.png"},
+  {"question": "Point ____ is located at (1, -3)", "answer": "d", "imageUrl": "https://i.postimg.cc/pdfss776/Screenshot-2025-02-10-at-4-59-00-PM.png"},
+//coordinate graphing with decimals
+{ question: "Point ____ is located at (-0.7, 0.3) ", answer: "c", imageUrl: "https://i.postimg.cc/TY4CMXD0/Screenshot-2024-12-25-at-2-35-09-PM.png" },
+{ question: "Point ____ is located at (0.2, 0.2) ", answer: "d", imageUrl: "https://i.postimg.cc/TY4CMXD0/Screenshot-2024-12-25-at-2-35-09-PM.png" },
+{ question: "Point ____ is located at (-0.4, -0.4) ", answer: "a", imageUrl: "https://i.postimg.cc/TY4CMXD0/Screenshot-2024-12-25-at-2-35-09-PM.png" },
+{ question: "Point ____ is located at (0.1, -0.3) ", answer: "b", imageUrl: "https://i.postimg.cc/TY4CMXD0/Screenshot-2024-12-25-at-2-35-09-PM.png" },
+{ question: "Point ____ is located at (2.5, 1.5) ", answer: "c", imageUrl: "https://i.postimg.cc/nV1qY1zJ/Screenshot-2024-12-25-at-2-08-57-PM.png" },
+{ question: "Point ____ is located at (-3, -2.5) ", answer: "b", imageUrl: "https://i.postimg.cc/nV1qY1zJ/Screenshot-2024-12-25-at-2-08-57-PM.png" },
+{ question: "Point ____ is located at (-3.5, 2) ", answer: "d", imageUrl: "https://i.postimg.cc/nV1qY1zJ/Screenshot-2024-12-25-at-2-08-57-PM.png" },
+{ question: "Point ____ is located at (2, -1.5) ", answer: "a", imageUrl: "https://i.postimg.cc/nV1qY1zJ/Screenshot-2024-12-25-at-2-08-57-PM.png" },
+{ question: "Point ____ is located at (0.5, 1) ", answer: "b", imageUrl: "https://i.postimg.cc/Mpk1ntqS/Screenshot-2024-12-25-at-12-58-04-PM.png" },
+{ question: "Point ____ is located at (-1.75, 0.5) ", answer: "a", imageUrl: "https://i.postimg.cc/Mpk1ntqS/Screenshot-2024-12-25-at-12-58-04-PM.png" },
+{ question: "Point ____ is located at (-1, -1.5) ", answer: "c", imageUrl: "https://i.postimg.cc/Mpk1ntqS/Screenshot-2024-12-25-at-12-58-04-PM.png" },
+{ question: "Point ____ is located at (1, -2) ", answer: "d", imageUrl: "https://i.postimg.cc/Mpk1ntqS/Screenshot-2024-12-25-at-12-58-04-PM.png" },
+{ question: "Point ____ is located at (0.2, 1) ", answer: "d", imageUrl: "https://i.postimg.cc/R0qXHHdm/Screenshot-2024-12-25-at-1-54-03-PM.png" },
+{ question: "Point ____ is located at (-0.8, -0.8) ", answer: "a", imageUrl: "https://i.postimg.cc/R0qXHHdm/Screenshot-2024-12-25-at-1-54-03-PM.png" },
+{ question: "Point ____ is located at (1, -0.6) ", answer: "b", imageUrl: "https://i.postimg.cc/R0qXHHdm/Screenshot-2024-12-25-at-1-54-03-PM.png" },
+{ question: "Point ____ is located at (-1, 0.8) ", answer: "c", imageUrl: "https://i.postimg.cc/R0qXHHdm/Screenshot-2024-12-25-at-1-54-03-PM.png" },
 
+//quadrants coordinate plane
+  {"question": "A point is located at (-4, 5). Identify its quadrant.", "answer": "2", "imageUrl": "https://i.postimg.cc/bNjKt5f2/quadrants.gif"},
+  {"question": "A point is at (3, -7). Identify its quadrant.", "answer": "4", "imageUrl": "https://i.postimg.cc/bNjKt5f2/quadrants.gif"},
+  {"question": "A point is positioned at (-2, -6). Identify its quadrant.", "answer": "3", "imageUrl": "https://i.postimg.cc/bNjKt5f2/quadrants.gif"},
+  {"question": "A point is given as (8, 2). Identify its quadrant.", "answer": "1", "imageUrl": "https://i.postimg.cc/bNjKt5f2/quadrants.gif"},
+  {"question": "A point is located at (-7, 8). Identify its quadrant.", "answer": "2", "imageUrl": "https://i.postimg.cc/bNjKt5f2/quadrants.gif"},
+  {"question": "A point is at (6, -4). Identify its quadrant.", "answer": "4", "imageUrl": "https://i.postimg.cc/bNjKt5f2/quadrants.gif"},
+  {"question": "A point is positioned at (-5, -9). Identify its quadrant.", "answer": "3", "imageUrl": "https://i.postimg.cc/bNjKt5f2/quadrants.gif"},
+  {"question": "A point is given as (9, 3). Identify its quadrant.", "answer": "1", "imageUrl": "https://i.postimg.cc/bNjKt5f2/quadrants.gif"},
+  {"question": "A point is at (2, -8). Identify its quadrant.", "answer": "4", "imageUrl": "https://i.postimg.cc/bNjKt5f2/quadrants.gif"},
+  {"question": "A point is positioned at (-10, 1). Identify its quadrant.", "answer": "2", "imageUrl": "https://i.postimg.cc/bNjKt5f2/quadrants.gif"},
+
+
+
+//reflections on coordinate plane
+  { "question": "<br>The points (5, -2) and (5, 2) are given. This is a reflection across the ____ axis.", "answer": "x", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (-4, 9) and (4, 9) are given. This is a reflection across the ____ axis.", "answer": "y", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (-2, -3) and (-2, 3) are given. This is a reflection across the ____ axis.", "answer": "x", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (7, 6) and (-7, 6) are given. This is a reflection across the ____ axis.", "answer": "y", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (0, 4) and (0, -4) are given. This is a reflection across the ____ axis.", "answer": "x", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (-6, 3) and (6, 3) are given. This is a reflection across the ____ axis.", "answer": "y", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (-1, -7) and (-1, 7) are given. This is a reflection across the ____ axis.", "answer": "x", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (9, -5) and (9, 5) are given. This is a reflection across the ____ axis.", "answer": "x", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (-8, -3) and (8, -3) are given. This is a reflection across the ____ axis.", "answer": "y", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (4, 5) and (4, -5) are given. This is a reflection across the ____ axis.", "answer": "x", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (-3, 7) and (3, 7) are given. This is a reflection across the ____ axis.", "answer": "y", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (2, -6) and (2, 6) are given. This is a reflection across the ____ axis.", "answer": "x", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (-8, -4) and (8, -4) are given. This is a reflection across the ____ axis.", "answer": "y", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+  { "question": "<br>The points (6, -3) and (6, 3) are given. This is a reflection across the ____ axis.", "answer": "x", "imageUrl": "https://i.postimg.cc/kMTt2WNQ/reflection-gif.gif" },
+
+
+//distance between two points
+  { "question": "Find the distance between (9, 0) and (9, -4)", "answer": "4", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (-10, 5) and (-10, -2)", "answer": "7", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (6, -3) and (6, 5)", "answer": "8", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (-3, 4) and (2, 4)", "answer": "5", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (6, -2) and (-4, -2)", "answer": "10", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (-8, 7) and (-3, 7)", "answer": "5", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (1, -5) and (9, -5)", "answer": "8", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+{ "question": "Find the distance between (-4, 6) and (-4, 9)", "answer": "3", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (2, -9) and (2, -1)", "answer": "8", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (0, -3) and (0, -7)", "answer": "4", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (-5, 0) and (2, 0)", "answer": "7", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (4, -3) and (-1, -3)", "answer": "5", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (-10, 6) and (-4, 6)", "answer": "6", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (7, 2) and (12, 2)", "answer": "5", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (-3, -8) and (5, -8)", "answer": "8", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (-6, 1) and (-1, 1)", "answer": "5", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (5, -7) and (5, -2)", "answer": "5", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (-10, -5) and (-10, -2)", "answer": "3", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (6, -3) and (6, -8)", "answer": "5", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (7, -2) and (7, 3)", "answer": "5", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (-4, 6) and (-4, -2)", "answer": "8", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (2, 9) and (2, -1)", "answer": "10", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (0, -3) and (0, 4)", "answer": "7", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (-8, 2) and (-8, -6)", "answer": "8", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+  { "question": "Find the distance between (3, 1) and (3, -5)", "answer": "6", "imageUrl": "https://i.postimg.cc/rpgzNSL4/DISTANCE.gif" },
+
+
+//area of a triangle
+
+{"question": "<br>Find the area of a triangle with a base of 4 units and a height of 5 units<br>____ square units", "answer": "10", "imageUrl": ""},
+{"question": "<br>Find the area of a triangle with a base of 6 units and a height of 7 units<br>____ square units", "answer": "21", "imageUrl": ""},
+{"question": "<br>Find the area of a triangle with a base of 10 units and a height of 8 units<br>____ square units", "answer": "40", "imageUrl": ""},
+{"question": "<br>Find the area of a triangle with a base of 10 units and a height of 9 units<br>____ square units", "answer": "45", "imageUrl": ""},
+{"question": "<br>Find the area of a triangle with a base of 5 units and a height of 6 units<br>____ square units", "answer": "15", "imageUrl": ""},
+{"question": "<br>Find the area of a triangle with a base of 8 units and a height of 3 units<br>____ square units", "answer": "12", "imageUrl": ""},
+{"question": "<br>Find the area of a triangle with a base of 14 units and a height of 10 units<br>____ square units", "answer": "70", "imageUrl": ""},
+{"question": "<br>Find the area of a triangle with a base of 9 units and a height of 4 units<br>____ square units", "answer": "18", "imageUrl": ""},
+{"question": "<br>Find the area of a triangle with a base of 8 units and a height of 11 units<br>____ square units", "answer": "44", "imageUrl": ""},
+{"question": "<br>Find the area of a triangle with a base of 10 units and a height of 6 units<br>____ square units", "answer": "30", "imageUrl": ""},
+{"question": "<br>Find the area of a triangle with a base of 20 units and a height of 10 units<br>____ square units", "answer": "100", "imageUrl": ""},
+
+
+//area formulas
+{ "question": "<br>Which formula finds the area of a triangle?", "answer": "B. Area = (1/2) × base × height", "options": ["A. Area = base × height", "B. Area = (1/2) × base × height", "C. Area = (1/2) × height × (base1 + base2)", "D. Area = length × width"], "imageUrl": "https://i.postimg.cc/Sxzk9BFg/area-triangle2017-ani-orig.gif" },
+{ "question": "<br>Which formula finds the area of a parallelogram?", "answer": "A. Area = base × height", "options": ["A. Area = base × height", "B. Area = (1/2) × base × height", "C. Area = (1/2) × (base1 + base2) × height", "D. Area = length × width"], "imageUrl": "https://i.postimg.cc/3RycfvY7/pa.gif" },
+{ "question": "<br>Which formula finds the area of a rhombus?", "answer": "C. Area = (1/2) × diagonal1 × diagonal2", "options": ["A. Area = base × height", "B. Area = (1/2) × base × height", "C. Area = (1/2) × diagonal1 × diagonal2", "D. Area = length × width"], "imageUrl": "https://i.postimg.cc/28WZqMpQ/rhombus-rotated.gif" },
+{ "question": "<br>Which formula finds the area of a trapezoid?", "answer": "C. Area = (1/2) × height × (base1 + base2)", "options": ["A. Area = base × height", "B. Area = (1/2) × base × height", "C. Area = (1/2) × height × (base1 + base2)", "D. Area = length × width"], "imageUrl": "https://i.postimg.cc/sfbYQn7P/trap.gif" },
+
+
+//triange area
+{"question":"<br>Amelia is keeping her monkeys in a triangular enclosure.<br>The base is 6 m, the height is 10 m. <br><br>Find the AREA of the enclosure.<br> A = (1/2)bh","answer":"30","imageUrl":"https://i.postimg.cc/Hn1s9C6C/triangle-monkey.gif"},
+{"question":"<br>Rory wants his dog to swim in a triangular swimming area. <br><br>The base is 8 m, the height is 6 m. <br><br>Find the AREA of the swimming pool.<br><br> A = (1/2)bh","answer":"24","imageUrl":"https://i.postimg.cc/W4kf0ntD/dog-triangle.gif"},
+//parallelogram area
+{"question":"<br>Rayaan is fencing off a parallelogram-shaped garden to keep out squirrels. <br><br>The base is 10 m, the height is 6 m. <br><br>Find the AREA of the garden.<br><br> A = bh","answer":"60","imageUrl":"https://i.postimg.cc/2St2BtF8/98a304c363d48adcc0f5141361a80303.gif"},
+{"question":"<br>The Dockland Building is shaped like a parallelogram. <br><br>The base is ABOUT 90 m, the height is ABOUT 60 m. <br><br>Find the AREA of the face of the building.<br><br> A = bh","answer":"5400","imageUrl":"https://i.postimg.cc/SsCznbXb/dockland-building.jpg"},
+{"question":"<br>Sebastian is keeping his penquins in a parallelogram shaped pool <br><br>The base is 12 m, the height is 4 m. <br><br>Find the AREA of the pool.<br><br> A = bh","answer":"48","imageUrl":"https://i.postimg.cc/hG3rf7KC/giphy.gif"},
+{"question":"<br>Sanika keeps her ferret in parallelogram shaped area. <br><br>The base is 1/4 mile, the height is 1/8 mile. <br><br>Find the AREA.<br><br> A = bh","answer":"1/32","imageUrl":"https://i.postimg.cc/xCfjyFG6/ff.gif"},
+//trapezoid area
+{"question":"<br>Alexa is making a trapezoid table for her cat.<br>Base One = 10 in<br>Base Two =  6 in <br>Height is 8 in.<br>Find the AREA of one trapezoid  side.<br><br> A = 1/2(h)(base one + base two)","answer":"64","imageUrl":"https://i.postimg.cc/tgwyq5jv/cat.jpg"},
+{"question":"<br>Aleco enjoyed watching this trapezoid-shaped cat gif for hours. <br><br>Base One = 4 in, Base Two =  2 in, Height = 2 in.<br>Find the AREA of the trapezoid.<br><br> A = 1/2(h)(base one + base two)","answer":"6","imageUrl":"https://i.postimg.cc/KvzNsGv2/cat-trap.gif"},
+{"question":"<br>Grace built a space station. Each hexagon on the screen is made up two trapezoids. <br><br>Base One = 6 m<br>Base Two =  10 m <br>Height is 4 m <br><br>Find the AREA of one trapezoid.<br><br> A = 1/2(h)(base one + base two)","answer":"32","imageUrl":"https://i.postimg.cc/fyJ3RbLT/hexagons.jpg"},
+{"question":"Ethan noticed this lion really liked this trapezoid shaped mirror.<br><br>Base One = 8 in<br>Base Two =  6 in <br>Height is 5 in. <br><br>Find the AREA the trapezoid <br><br> A = 1/2(h)(base one + base two)","answer":"35","imageUrl":"https://i.postimg.cc/FHxm5hhF/lion.gif"},
+{"question":"Karly noticed a bunch of cats jumping inside a trapezoid. She thought, \"Man, I wonder how big that trapezoid is.\"<br><br>Base One = 5 in, Base Two =  6 in <br>Height is 4 in. <br>Find the AREA the trapezoid <br> A = 1/2(h)(base one + base two)","answer":"22","imageUrl":"https://i.postimg.cc/HnRShZZ1/jumping-cats.gif"},
+{"question":"What is the area of this trapezoid?", "answer":"18 m²", "imageUrl":"https://i.postimg.cc/kGXMKkBS/Screenshot-2025-02-12-at-5-12-49-AM.png", "options":["14 m²","18 m²","21 m²","35 m²"]},
+
+//rhombus area
+{"question":"<br>This Rhombic triacontahedron is made up of 30 rhombi.  <br><br>Diagonal One = 8 <br>Diagonal Two =  10   <br><br>Find the AREA of one rhombus.<br><br> A = (1/2) × diagonal1 × diagonal2","answer":"40","imageUrl":"https://i.postimg.cc/y6pv8nB6/Rhombictriacontahedron.gif"},
+{"question":"Dax is designing a rhombus-shaped logo for his Taco Tuesday club. The diagonals are 14 cm and 10 cm. What is the area of the logo?<br><br> A = (1/2) × diagonal1 × diagonal2","answer":"70","imageUrl":"https://i.postimg.cc/9X6VLF07/eating-taco-diamond.gif"},
+{"question":"<br>Lauren is keeping her monkey in a rhombus shaped enclosure. <br><br>Diagonal one is 10 m <br>Diagonal two  is 12 m. <br><br>Find the AREA of the enclosure.<br><br> A = (1/2) × diagonal1 × diagonal2","answer":"60","imageUrl":"https://i.postimg.cc/KvyDRkr0/diamond-kite-monkey.gif"},
+
+
+//area and perimter on a coordinate plane
+  {"question": "Perimeter?", "answer": "24", "imageUrl": "https://i.postimg.cc/Ls5twdgz/shape1.png"},
+  {"question": "Perimeter?", "answer": "20", "imageUrl": "https://i.postimg.cc/qvbn8mDg/shape10.png"},
+  {"question": "Perimeter?", "answer": "20", "imageUrl": "https://i.postimg.cc/Gtwv4H7Q/shape2.png"},
+  {"question": "Area?", "answer": "16", "imageUrl": "https://i.postimg.cc/MH7VVqg8/shape3-1.png"},
+  {"question": "Area?", "answer": "64", "imageUrl": "https://i.postimg.cc/nVBv6Grw/shape6.png"},
+  {"question": "Perimeter?", "answer": "8", "imageUrl": "https://i.postimg.cc/PrM1qfmW/shape8.png"},
+  {"question": "Area?", "answer": "14", "imageUrl": "https://i.postimg.cc/g2k8L9Df/shape9.png"},
+
+
+
+
+//area of parallelogram, trapezoid, rhombus with diagonals, circle, circumference of circle
+
+{question:"A parallelogram has a base of 8 cm and a height of 5 cm. What is its area?",answer:"40",options:["35","40","45","50"],imageUrl:""},
+{question:"A rhombus has diagonals of 6 cm and 4 cm. What is its area?",answer:"12",options:["10","12","14","16"],imageUrl:""},
+{question:"A trapezoid has bases of 10 cm and 6 cm, and a height of 4 cm. What is its area?",answer:"32",options:["28","30","32","36"],imageUrl:""},
+{question:"A circle has a radius of 7 cm. What is its area? (Use π = 3.14)",answer:"153.86",options:["153.86","150","157","160"],imageUrl:""},
+{question:"A circle has a diameter of 8 cm. What is its circumference? (Use π = 3.14)",answer:"25.12",options:["24","25.12","26","26.5"],imageUrl:""},
+{question:"A parallelogram has a base of 10 m and a height of 6 m. What is its area?",answer:"60",options:["50","60","70","80"],imageUrl:""},
+{question:"A rhombus has diagonals of 8 cm and 5 cm. What is its area?",answer:"20",options:["18","20","22","24"],imageUrl:""},
+{question:"A trapezoid has bases of 12 cm and 8 cm, and a height of 5 cm. What is its area?",answer:"50",options:["48","50","52","54"],imageUrl:""},
+{question:"A circle has a radius of 10 cm. What is its area? (Use π = 3.14)",answer:"314",options:["300","310","314","320"],imageUrl:""},
+{question:"A circle has a diameter of 12 cm. What is its circumference? (Use π = 3.14)",answer:"37.68",options:["36","37","37.68","38"],imageUrl:""},
+
+
+
+//area of complex figures
+{"question":"Which expression represents the correct way to find the area of the composite figure?,", "answer":"(8 × 7) - (1/2 × 3 × 5)", "imageUrl":"https://i.postimg.cc/pTD8Qfv5/Screenshot-2025-02-12-at-6-37-50-AM.png", "options":["(8 × 7) + (3 × 4) - (1/2 × 4 × 3)","(8 × 4) + (3 × 7) - (1/2 × 3 × 3)","(8 × 7) - (1/2 × 3 × 5)"]},
+{"question":"Which expression represents the correct way to find the area of the composite figure?", "answer":"(1/2 × 4 × 3) + (1/2 × (10 + 8) × 5)", "imageUrl":"https://i.postimg.cc/9QCKPMqw/Screenshot-2025-02-12-at-5-27-58-AM.png", "options":["(1/2 × 10 × 3) + (1/2 × (10 + 4) × 5)","(1/2 × 4 × 3) + (1/2 × (10 + 8) × 5)","(1/2 × 4 × 3) + (10 × 5)"]},
+{"question":"Which expression represents the correct way to find the area of the composite figure?,", "answer":"(1/2 × 5 × 3) + (1/2 × (12 + 10) × 4)", "imageUrl":"https://i.postimg.cc/Bb1LvJVc/Screenshot-2025-02-12-at-5-52-44-AM.png", "options":["(1/2 × 12 × 3) + (1/2 × (12 + 10) × 4)","(1/2 × 5 × 3) + (12 × 4)","(1/2 × 5 × 3) + (1/2 × (12 + 10) × 4)"]},
+{"question":"Which expression represents the correct way to find the area of the composite figure?", "answer":"(1/2 × 3 × 2) + (1/2 × (9 + 5) × 5)", "imageUrl":"https://i.postimg.cc/gkFvrtxN/Screenshot-2025-02-12-at-5-36-20-AM.png", "options":["(1/2 × 9 × 2) + (1/2 × (9 + 5) × 5)","(1/2 × 3 × 2) + (1/2 × (9 + 5) × 5)","(1/2 × 3 × 2) + (9 × 5)"]},
+
+//composite figures area
+{"question":"Which expression represents the correct way to find the area of the composite figure?,", "answer":"(12 × 7.5) + (6 × 12)", "imageUrl":"https://i.postimg.cc/hvPKpd6t/Screenshot-2025-02-12-at-7-02-47-AM.png", "options":["(12 × 12) + (7.5 × 12)","(12 × 7.5) + (6 × 12)"]},
+//area and circumference of a circle
+{"question":"Thomas is eating a circular pizza with a radius of 8 inches. <br>What is the circumference of the pizza? <br>Use the formula C = 2πr and π ≈ 3.14.", "answer":"50.24 in", "imageUrl":"", "options":["16 in","25.12 in","50.24 in","100.48 in"]},
+{"question":"Maksym is using a circular dinner plate with a diameter of 12 inches. <br>What is the area of the plate? <br>Use the formula A = πr² and π ≈ 3.14.", "answer":"113.04 in²", "imageUrl":"", "options":["37.68 in²","113.04 in²","452.16 in²","75.36 in²"]},
+{"question":"Leah is baking a circular cake with a diameter of 10 inches. <br>What is the area of the cake? <br>Use the formula A = πr² and π ≈ 3.14.", "answer":"78.5 in²", "imageUrl":"", "options":["31.4 in²","78.5 in²","157 in²","50.24 in²"]},
+{"question":"Nikash is measuring a circular basketball hoop with a radius of 6 inches. <br>What is the circumference of the hoop? <br>Use the formula C = 2πr and π ≈ 3.14.", "answer":"37.68 in", "imageUrl":"", "options":["18.84 in","12 in","37.68 in","75.36 in"]},
+{"question":"Annika is drawing a circular soccer logo on her notebook with a diameter of 14 cm. <br>What is the area of the logo? <br>Use the formula A = πr² and π ≈ 3.14.", "answer":"153.86 cm²", "imageUrl":"", "options":["49 cm²","153.86 cm²","307.72 cm²","100 cm²"]},
+{"question":"Dev is using a circular telescope lens with a radius of 5 cm to observe a science experiment. <br>What is the circumference of the lens? <br>Use the formula C = 2πr and π ≈ 3.14.", "answer":"31.4 cm", "imageUrl":"", "options":["15.7 cm","31.4 cm","62.8 cm","10 cm"]},
+{"question":"Maria is editing a circular profile picture for social media with a radius of 7 cm. <br>What is the circumference of the picture? <br>Use the formula C = 2πr and π ≈ 3.14.", "answer":"43.96 cm", "imageUrl":"", "options":["21 cm","43.96 cm","14 cm","87.92 cm"]},
+{"question":"Elle is painting a circular canvas with a radius of 10 inches. <br>What is the circumference of the canvas? <br>Use the formula C = 2πr and π ≈ 3.14.", "answer":"62.8 in", "imageUrl":"", "options":["31.4 in","62.8 in","125.6 in","20 in"]},
+{"question":"Nelly is planting a circular flower bed with a diameter of 18 feet. <br>What is the area of the flower bed? <br>Use the formula A = πr² and π ≈ 3.14.", "answer":"254.34 ft²", "imageUrl":"", "options":["81 ft²","254.34 ft²","508.68 ft²","100 ft²"]},
+{"question":"Olivia is practicing field hockey on a circular field with a radius of 7 meters. <br>What is the area of the field? <br>Use the formula A = πr² and π ≈ 3.14.", "answer":"153.86 m²", "imageUrl":"", "options":["49 m²","153.86 m²","21 m²","307.72 m²"]},
+{"question":"Jenna is enjoying a Starbucks drink that has a circular lid with a diameter of 10 cm. <br>What is the circumference of the lid? <br>Use the formula C = πd and π ≈ 3.14.", "answer":"31.4 cm", "imageUrl":"", "options":["10 cm","62.8 cm","31.4 cm","15.7 cm"]},
+{"question":"Jacob is building a circular Minecraft arena with a radius of 5 blocks. <br>What is the area of the arena? <br>Use the formula A = πr² and π ≈ 3.14.", "answer":"78.5 blocks²", "imageUrl":"", "options":["25 blocks²","157 blocks²","31.4 blocks²","78.5 blocks²"]},
+{"question":"Lorenzo is unwrapping a Reese’s Pieces candy that is perfectly circular with a diameter of 8 cm. <br>What is the circumference of the candy? <br>Use the formula C = πd and π ≈ 3.14.", "answer":"25.12 cm", "imageUrl":"", "options":["50.24 cm","12.56 cm","8 cm","25.12 cm"]},
+{"question":"Ethan is playing with his dog, who is chasing a circular frisbee with a radius of 6 inches. <br>What is the area of the frisbee? <br>Use the formula A = πr² and π ≈ 3.14.", "answer":"113.04 in²", "imageUrl":"", "options":["113.04 in²","18.84 in²","226.08 in²","36 in²"]},
+{"question":"Embry is watching her cat nap on a circular rug with a radius of 4 feet. <br>What is the area of the rug? <br>Use the formula A = πr² and π ≈ 3.14.", "answer":"50.24 ft²", "imageUrl":"", "options":["16 ft²","100.48 ft²","50.24 ft²","12.56 ft²"]},
+
+
+
+
+
+
+
+
+  //surface area of square pyramid
+{"question": "<br>Find the surface area of the square pyramid", "answer": "33", "imageUrl": "https://i.postimg.cc/ryGkjQcC/Screenshot-2024-12-27-at-5-58-54-AM.png"},
+{"question": "<br>Find the surface area of the square pyramid", "answer": "56", "imageUrl": "https://i.postimg.cc/8kfHg0sM/Screenshot-2024-12-27-at-5-59-39-AM.png"},
+{"question": "<br>Find the surface area of the square pyramid", "answer": "95", "imageUrl": "https://i.postimg.cc/bN82VCnz/Screenshot-2024-12-27-at-6-00-23-AM.png"},
+{"question": "<br>Find the surface area of the square pyramid", "answer": "340", "imageUrl": "https://i.postimg.cc/RVD4Jq4j/Screenshot-2024-12-27-at-6-01-18-AM.png"},
+{"question": "<br>Find the surface area of the square pyramid", "answer": "16", "imageUrl": "https://i.postimg.cc/DybY5zqV/Screenshot-2024-12-27-at-6-02-45-AM.png"},
+//surface area square pyramid formula
+{"question":"Find surface area of a square pyramid.<br>Base = 12 cm, Slant height is 9 cm", "answer":"SA = 2(12)(9) + 12²", "imageUrl":"https://i.postimg.cc/CLfwfhc6/Screenshot-2025-02-14-at-4-56-57-AM.png", "options":["SA = (12)(9) + 12²","SA = 2(12)(9) + 12²"]},
+{"question":"<br> Find surface area of a square pyramid.<br>Base = 10 cm, Slant height is 8 cm", "answer":"SA = 2(10)(8) + 10²", "imageUrl":"https://i.postimg.cc/CLfwfhc6/Screenshot-2025-02-14-at-4-56-57-AM.png", "options":["SA = 2(10)(8) + 10²","SA = 2(8)(8) + 10²"]},
+{"question":"Find the surface area of a square pyramid.<br>Base = 14 cm, Slant height = 10 cm", "answer":"SA = 2(14)(10) + 14²", "imageUrl":"https://i.postimg.cc/CLfwfhc6/Screenshot-2025-02-14-at-4-56-57-AM.png", "options":["SA = 2(14)(10) + 14²","SA = (14)(10) + 14²"]},
+{"question":"Find the surface area of a square pyramid.<br>Base = 9 cm, Slant height = 7 cm", "answer":"SA = 2(9)(7) + 9²", "imageUrl":"https://i.postimg.cc/CLfwfhc6/Screenshot-2025-02-14-at-4-56-57-AM.png", "options":["SA = (9)(7) + 9²","SA = 2(9)(7) + 9²"]},
+{"question":"Find the surface area of a square pyramid.<br>Base = 15 cm, Slant height = 12 cm", "answer":"SA = 2(15)(12) + 15²", "imageUrl":"https://i.postimg.cc/CLfwfhc6/Screenshot-2025-02-14-at-4-56-57-AM.png", "options":["SA = (15)(12) + 15²","SA = 2(15)(12) + 15²"]},
+{"question":"Find the surface area of a square pyramid.<br>Base = 11 cm, Slant height = 8 cm", "answer":"SA = 2(11)(8) + 11²", "imageUrl":"https://i.postimg.cc/CLfwfhc6/Screenshot-2025-02-14-at-4-56-57-AM.png", "options":["SA = 2(11)(8) + 11²","SA = (11)(8) + 11²"]},
+{"question":"Find the surface area of a square pyramid.<br>Base = 13 cm, Slant height = 9 cm", "answer":"SA = 2(13)(9) + 13²", "imageUrl":"https://i.postimg.cc/CLfwfhc6/Screenshot-2025-02-14-at-4-56-57-AM.png", "options":["SA = (13)(9) + 13²","SA = 2(13)(9) + 13²"]},
+
+
+
+//surface area of cylinder formula
+{"question":"Find the surface area of a cylinder", "answer":"SA = 2πr² + 2πrh", "imageUrl":"https://i.postimg.cc/J4HGWy2p/surface-area-of-cylinder-animation.gif", "options":["SA = 2(lh + lw + hw)","SA = 2πr² + 2πrh","SA = 2bs + b²"]},
+
+//surface area rectangular prism
+{"question":"Find the surface area of a rectangular prism.<br>Length = 8 cm, Width = 5 cm, Height = 10 cm<br> <br>Remember SA = 2(lh + lw + hw)<br>Liam Hemsworth and L'il Wayne do their homework twice.", "answer":"SA = 2((8 × 10) + (8 × 5) + (10 × 5))", "imageUrl":"", "options":["SA = 2((8 × 5) + (10 × 10))","SA = 2((8 × 10) + (8 × 5) + (10 × 5))","SA = 2((8 × 10) + (5 × 5))"]},
+{"question":"Find the surface area of a rectangular prism.<br>Length = 7 cm, Width = 4 cm, Height = 12 cm<br> <br>Remember SA = 2(lh + lw + hw)<br>Liam Hemsworth and L'il Wayne do their homework twice.,", "answer":"SA = 2((7 × 12) + (7 × 4) + (12 × 4))", "imageUrl":"", "options":["SA = 2((7 × 12) + (7 × 4) + (12 × 4))","SA = 2((7 × 4) + (12 × 12))","SA = 2((7 × 12) + (4 × 4))"]},
+{"question":"Find the surface area of a rectangular prism.<br>Length = 9 cm, Width = 6 cm, Height = 10 cm<br> <br>Remember SA = 2(lh + lw + hw)<br>Liam Hemsworth and L'il Wayne do their homework twice.,", "answer":"SA = 2((9 × 10) + (9 × 6) + (10 × 6))", "imageUrl":"", "options":["SA = 2((9 × 6) + (10 × 10))","SA = 2((9 × 10) + (9 × 6) + (10 × 6))","SA = 2((9 × 10) + (6 × 6))"]},
+{"question":"Find the surface area of a rectangular prism.<br>Length = 15 cm, Width = 9 cm, Height = 7 cm<br> <br>Remember SA = 2(lh + lw + hw)<br>Liam Hemsworth and L'il Wayne do their homework twice.,", "answer":"SA = 2((15 × 7) + (15 × 9) + (7 × 9))", "imageUrl":"", "options":["SA = 2((15 × 9) + (7 × 7))","SA = 2((15 × 7) + (9 × 9))","SA = 2((15 × 7) + (15 × 9) + (7 × 9))"]},
+{"question":"Find the surface area of a rectangular prism.<br>Length = 12 cm, Width = 8 cm, Height = 6 cm<br> <br>Remember SA = 2(lh + lw + hw)<br>Liam Hemsworth and L'il Wayne do their homework twice.,", "answer":"SA = 2((12 × 6) + (12 × 8) + (6 × 8))", "imageUrl":"", "options":["SA = 2((12 × 8) + (6 × 6))","SA = 2((12 × 6) + (8 × 8))","SA = 2((12 × 6) + (12 × 8) + (6 × 8))"]},
+
+
+
+//volume of a rectangular prism
+{ "question": "Find the volume of a rectangular prism with these dimensions <br> length = 5 <br> width = 4 <br> height = 2", "answer": "40", "imageUrl": "https://i.postimg.cc/W40B5C99/Screenshot-2024-12-31-at-5-01-59-AM.png" },
+{ "question": "Find the volume of a rectangular prism with these dimensions <br> length = 6 <br> width = 3 <br> height = 2", "answer": "36", "imageUrl": "https://i.postimg.cc/W40B5C99/Screenshot-2024-12-31-at-5-01-59-AM.png" },
+{ "question": "Find the volume of a rectangular prism with these dimensions <br> length = 8 <br> width = 2 <br> height = 2", "answer": "32", "imageUrl": "https://i.postimg.cc/W40B5C99/Screenshot-2024-12-31-at-5-01-59-AM.png" },
+{ "question": "Find the volume of a rectangular prism with these dimensions <br> length = 7 <br> width = 3 <br> height = 1", "answer": "21", "imageUrl": "https://i.postimg.cc/W40B5C99/Screenshot-2024-12-31-at-5-01-59-AM.png" },
+{ "question": "Find the volume of a rectangular prism with these dimensions <br> length = 9 <br> width = 2 <br> height = 3", "answer": "54", "imageUrl": "https://i.postimg.cc/W40B5C99/Screenshot-2024-12-31-at-5-01-59-AM.png" },
+{ question: "To solve quickly on a calculator, you <br> <br> a. multiply 2 x 2.5 x 3.5 <br> b. multiply 2 x 2.12 x 4.12 <br> c. multiply 2 x 2.5 x 4.5", answer: "c", imageUrl: "https://i.postimg.cc/2SVj99Yh/Screenshot-2024-12-31-at-4-40-27-AM.png" },
+{ question: "To solve quickly on a calculator, you <br> <br> a. multiply 3 x 1.5 x 3.5 <br> b. multiply 3 x 1.25 x 3.5 <br> c. multiply 3 x 1.4 x 3.5", answer: "b", imageUrl: "https://i.postimg.cc/YShqvn0b/Screenshot-2024-12-31-at-4-40-35-AM.png" },
+{ question: "To solve quickly on a calculator, you <br> <br> a. multiply 0.5 x 1.25 x 1.5 <br> b.  1.25 x 0.5 x 1.25 <br> c. multiply 2 x 2.5 x 4.5", answer: "a", imageUrl: "https://i.postimg.cc/fbXpqmrM/Screenshot-2024-12-31-at-4-40-44-AM.png" },
+{"question":"What is the volume of the rectangular prism?", "answer":"73 1/2 in³", "imageUrl":"https://i.postimg.cc/Jn8z4y8P/Screenshot-2025-02-12-at-5-12-29-AM.png", "options":["12 1/6 in³","24 in³","60 1/8 in³","73 1/2 in³"]},
+
+//find volume of rectangular prism, cylinder, triangular prism
+{ "question": "Find the volume of a rectangular prism. <br>Length = 6 cm, Width = 3 cm, Height = 2 cm. <br>Formula: V = l × w × h<br> No label necessary", "answer": "36", "imageUrl": "https://i.postimg.cc/xdHX7x5H/volume-rectangular-prism.png" },
+{ "question": "Find the volume of a rectangular prism. <br>Length = 4 cm, Width = 5 cm, Height = 2 cm. <br>Formula: V = l × w × h<br> No label necessary", "answer": "40", "imageUrl": "https://i.postimg.cc/xdHX7x5H/volume-rectangular-prism.png" },
+{ "question": "Find the volume of a rectangular prism. <br>Length = 3 cm, Width = 7 cm, Height = 2 cm. <br>Formula: V = l × w × h<br> No label necessary", "answer": "42", "imageUrl": "https://i.postimg.cc/xdHX7x5H/volume-rectangular-prism.png" },
+{ "question": "Find the volume of a cylinder. <br>Radius = 2 m, Height = 6 m. <br>Formula: V = πr²h", "answer": "24π m³", "imageUrl": "https://i.postimg.cc/xCz363JF/download.png", "options": ["20π m³", "24π m³", "28π m³", "30π m³"] },
+{ "question": "Find the volume of a cylinder. <br>Radius = 4 m, Height = 3 m. <br>Formula: V = πr²h", "answer": "48π m³", "imageUrl": "https://i.postimg.cc/xCz363JF/download.png", "options": ["36π m³", "40π m³", "48π m³", "56π m³"] },
+{ "question": "Find the volume of a cylinder. <br>Radius = 5 m, Height = 2 m. <br>Formula: V = πr²h", "answer": "50π m³", "imageUrl": "https://i.postimg.cc/xCz363JF/download.png", "options": ["30π m³", "40π m³", "50π m³", "60π m³"] },
+{ "question": "Find the volume of a triangular prism. <br>Base of triangle = 5 in, Height of triangle = 4 in, <br>Prism height = 6 in. <br>Formula: V = (1/2 × b × h) × height<br> No label necessary", "answer": "60", "imageUrl": "https://i.postimg.cc/br0MBhDM/Screenshot-2025-02-16-at-6-51-12-AM.png" },
+{ "question": "Find the volume of a triangular prism. <br>Base of triangle = 4 in, Height of triangle = 3 in, <br>Prism height = 5 in. <br>Formula: V = (1/2 × b × h) × height<br> No label necessary", "answer": "30", "imageUrl": "https://i.postimg.cc/br0MBhDM/Screenshot-2025-02-16-at-6-51-12-AM.png" },
+{ "question": "Find the volume of a triangular prism. <br>Base of triangle = 6 in, Height of triangle = 2 in, <br>Prism height = 4 in. <br>Formula: V = (1/2 × b × h) × height<br> No label necessary", "answer": "24", "imageUrl": "https://i.postimg.cc/br0MBhDM/Screenshot-2025-02-16-at-6-51-12-AM.png" },
+{ "question": "Find the volume of a rectangular prism. <br>Length = 5 cm, Width = 4 cm, Height = 3 cm. <br>Formula: V = l × w × h<br> No label necessary", "answer": "60", "imageUrl": "https://i.postimg.cc/xdHX7x5H/volume-rectangular-prism.png" },
+{ "question": "Find the volume of a cylinder. <br>Radius = 3 m, Height = 5 m. <br>Formula: V = πr²h", "answer": "45π m³", "imageUrl": "https://i.postimg.cc/xCz363JF/download.png", "options": ["30π m³", "35π m³", "45π m³", "50π m³"] },
+{ "question": "Find the volume of a triangular prism. <br>Base of triangle = 6 in, Height of triangle = 4 in, <br>Prism height = 5 in. <br>Formula: V = (1/2 × b × h) × height<br> No label necessary", "answer": "60", "imageUrl": "https://i.postimg.cc/br0MBhDM/Screenshot-2025-02-16-at-6-51-12-AM.png" },
+//volume given volume and area of the Base B, find the height
+{"question":"Find the height of a rectangular prism:  <br> Base area (B) = 15 cm² <br>Volume (V) = 45 cm³. <br>Formula: V = Bh","answer":"3","imageUrl":"https://i.postimg.cc/RFXffmtn/Screenshot-2025-02-18-at-6-31-18-AM.png"},
+{"question":"Find the height of a rectangular prism:  <br> Base area (B) = 10 m² <br>Volume (V) = 40 m³. <br>Formula: V = Bh","answer":"4","imageUrl":"https://i.postimg.cc/RFXffmtn/Screenshot-2025-02-18-at-6-31-18-AM.png"},
+{"question":"Find the height of a rectangular prism:  <br> Base area (B) = 25 in² <br>Volume (V) = 100 in³. <br>Formula: V = Bh","answer":"4","imageUrl":"https://i.postimg.cc/RFXffmtn/Screenshot-2025-02-18-at-6-31-18-AM.png"},
+{"question":"Find the height of a rectangular prism:  <br> Base area (B) = 12 ft² <br>Volume (V) = 36 ft³. <br>Formula: V = Bh","answer":"3","imageUrl":"https://i.postimg.cc/RFXffmtn/Screenshot-2025-02-18-at-6-31-18-AM.png"},
+{"question":"Find the height of a rectangular prism:  <br> Base area (B) = 30 cm² <br>Volume (V) = 90 cm³. <br>Formula: V = Bh","answer":"3","imageUrl":"https://i.postimg.cc/RFXffmtn/Screenshot-2025-02-18-at-6-31-18-AM.png"},
+{"question":"Find the height of a rectangular prism:  <br> Base area (B) = 20 cm² <br>Volume (V) = 60 cm³. <br>Formula: V = Bh","answer":"3","imageUrl":"https://i.postimg.cc/RFXffmtn/Screenshot-2025-02-18-at-6-31-18-AM.png"},
+
+
+        ];
+        
         loadQuestion();
     </script>
 </body>
