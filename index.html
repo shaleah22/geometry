@@ -114,6 +114,16 @@
             localStorage.removeItem("savedQuestionIndex");
             loadQuestion();
         });
+
+
+    
+    
+        //no right click code
+         window.addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+        }, false);
+
+
         
         const questions = [
     
@@ -388,5 +398,9 @@
         
         loadQuestion();
     </script>
+
+
+
+
 </body>
 </html>
